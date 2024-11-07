@@ -1,6 +1,11 @@
 import numpy as np
 DEBUG = False
 
+LEFT = 0
+RIGHT = 1
+X = 0
+Y = 1
+
 def file_to_xy_box(file_path):
     """ 
     Read file with box coordinates and return list of tuples ((x1, y1), (x2, y2))
@@ -55,28 +60,22 @@ def convert_blob_to_box(blob):
     y1 = y1 if y1 > 0 else 0
     return ((x1, y1), (x2, y2))
 
-def calculate_are_of_intersection(box1:tuple, box2:tuple) -> float:
+def intersection(box1, box2):
+    left = (max(box1[LEFT][X], box2[LEFT][X]), max(box1[LEFT][Y], box2[LEFT][Y]))
+    right = (min(box1[RIGHT][X], box2[RIGHT][X]), min(box1[RIGHT][Y], box2[RIGHT][Y]))
+    return (left, right)
+
+def area(box):
+    dx = box[RIGHT][X] - box[LEFT][X]
+    dy = box[RIGHT][Y] - box[LEFT][Y]
+    if dx < 0 or dy < 0:
+        return 0
+    return dx * dy
+
+def calculate_overlap_proportion(box1:tuple, box2:tuple) -> float:
     """
     ((x1, y1), (x2, y2))
     """
-    LEFT = 0
-    RIGHT = 1
-    X = 0
-    Y = 1
-    
-    def area(box):
-        dx = box[RIGHT][X] - box[LEFT][X]
-        dy = box[RIGHT][Y] - box[LEFT][Y]
-        if dx < 0 or dy < 0:
-            return 0
-        return dx * dy
-    
-    # Intersection
-    def intersection(box1, box2):
-        left = (max(box1[LEFT][X], box2[LEFT][X]), max(box1[LEFT][Y], box2[LEFT][Y]))
-        right = (min(box1[RIGHT][X], box2[RIGHT][X]), min(box1[RIGHT][Y], box2[RIGHT][Y]))
-        return (left, right)
-    
     intersection_area = area(intersection(box1, box2))
     union_area = area(box1) + area(box2) - intersection_area
 
@@ -161,7 +160,7 @@ def precision_recall(recognized:list, reference:list, IoU:float=0.5) -> tuple:
     FP = 0
     for recognized_center, recognized_box in zip(recognized_centrals, recognized):
         closest, index = get_closest(reference_centrals, recognized_center)
-        AoI = calculate_are_of_intersection(recognized_box, reference[index])
+        AoI = calculate_overlap_proportion(recognized_box, reference[index])
         if is_recognized(AoI, IoU):
             TP += 1
         else:
@@ -170,17 +169,3 @@ def precision_recall(recognized:list, reference:list, IoU:float=0.5) -> tuple:
     precision = 0 if reference_count == 0 else TP / reference_count
     recall = 0 if recognized_count == 0 else TP / recognized_count
     return precision, recall
-
-if __name__ == "__main__":
-    DEBUG = False
-
-    # test calculate_are_of_intersection
-
-    box1 = ((0, 0), (10, 10))
-    box2 = ((5, 5), (15, 15))
-    box3 = ((15, 15), (25, 25))
-    box4 = ((0, 0), (10, 6))
-
-    print(calculate_are_of_intersection(box1, box2))
-    print(calculate_are_of_intersection(box1, box3))
-    print(calculate_are_of_intersection(box1, box4))
