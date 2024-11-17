@@ -5,14 +5,14 @@ import cv2
 
 
 def img2hue_histogram(img: np.ndarray) -> np.ndarray:
-    """ Convert BGR image to Hue histogram
+    """ Convert RGB image to Hue histogram
     get:
-        img - BGR image
+        img - RGB image
     return:
         hist - Hue histogram
     """
     # RGB to HSV
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     hue = hsv[:, :, 0]
 
     # Histogram
@@ -56,11 +56,12 @@ class CamShift():
             pattern_file - path to pattern file
         """
         patern_bgr = cv2.imread(pattern_file)
-        y, x, z = patern_bgr.shape
+        patern_rgb = cv2.cvtColor(patern_bgr, cv2.COLOR_BGR2RGB)
+        y, x, z = patern_rgb.shape
         self.x_size = x
         self.y_size = y
 
-        self.pattern_hue_hist = img2hue_histogram(patern_bgr)
+        self.pattern_hue_hist = img2hue_histogram(patern_rgb)
 
         self.last_positon = None
 
