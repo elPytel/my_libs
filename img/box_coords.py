@@ -45,6 +45,26 @@ def load_files_to_dict(files) -> dict:
         dict_files_boxes[file] = list(file_to_xy_box(file))
     return dict_files_boxes
 
+def create_box_coordinates_from_bin_img(img):
+    """
+    Create box coordinates from binary image.
+    Find index of first and last non-zero element in each row and column.
+    Take min and max of these indexes.
+
+    Returns:
+        (x1, y1), (x2, y2) - coordinates of box
+    """
+    rows = np.any(img, axis=1)
+    cols = np.any(img, axis=0)
+
+    if not np.any(cols) or not np.any(rows):
+        return None
+
+    x1, x2 = np.where(cols)[0][[0, -1]]
+    y1, y2 = np.where(rows)[0][[0, -1]]
+
+    return (x1, y1), (x2, y2)
+
 def sigma_to_side(sigma):
     return 4*sigma
 
