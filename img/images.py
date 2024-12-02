@@ -3,9 +3,13 @@ import numpy as np
 import cv2
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']
+DEBUG = False
 
 def file_extension(file: str) -> str:
     return file.split('.')[-1]
+
+def file_name(file: str) -> str:
+    return file.split('/')[-1]
 
 def find(folder, file_types: str = None) -> list[str]:
     cwd = os.getcwd()
@@ -14,7 +18,8 @@ def find(folder, file_types: str = None) -> list[str]:
     print("Current working directory: {0}, files: ".format(cwd))
     for file in os.listdir(folder):
         if file_types is None or file_extension(file) in file_types:
-            print(file)
+            if DEBUG:
+                print(file)
             picture_files.append(os.path.join(folder, file))
     return picture_files
 
